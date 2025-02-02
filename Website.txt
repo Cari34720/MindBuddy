@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindMap Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        #mindmapContainer {
+            width: 80%;
+            margin: 20px auto;
+            border: 2px solid #333;
+            background: white;
+            padding: 20px;
+            min-height: 300px;
+            position: relative;
+        }
+        .node {
+            display: inline-block;
+            padding: 10px;
+            margin: 5px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 5px;
+            cursor: grab;
+        }
+        .center {
+            font-weight: bold;
+            background-color: #e74c3c;
+        }
+        .premium-section, .donation-section {
+            margin-top: 20px;
+            padding: 10px;
+            background: #ffcc00;
+        }
+    </style>
+</head>
+<body>
+    <h1>MindMap Generator</h1>
+    <input type="text" id="textInput" placeholder="Thema eingeben">
+    <button onclick="generateMindMap()">MindMap erstellen</button>
+    <input type="file" id="fileInput" onchange="uploadFile()">
+    <div id="mindmapContainer"></div>
+    <div class="premium-section">
+        <p>Upgrade auf Premium für erweiterte Funktionen!</p>
+        <button onclick="subscribe()">Jetzt abonnieren</button>
+    </div>
+    <div class="donation-section">
+        <p>Unterstütze uns mit einer Spende!</p>
+        <button onclick="donate()">Jetzt spenden</button>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("Mind Map Generator ready!");
+            enableDragAndDrop();
+            loadMindMap();
+        });
+
+        function uploadFile() {
+            const fileInput = document.getElementById("fileInput");
+            if (fileInput.files.length === 0) {
+                alert("Bitte wähle eine Datei aus.");
+                return;
+            }
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                generateMindMapFromText(event.target.result);
+                saveMindMap();
+            };
+            reader.readAsText(file);
+        }
+
+        function generateMindMap() {
+            const userInput = document.getElementById("textInput").value;
+            if (userInput.trim() === "") {
+                alert("Bitte gib ein Thema ein.");
+                return;
+            }
+            generateMindMapFromText(userInput);
+            saveMindMap();
+        }
+
+        function generateMindMapFromText(text) {
+            const mindmapContainer = document.getElementById("mindmapContainer");
+            mindmapContainer.innerHTML = "";
+            const nodes = text.split(" ").map(word => word.trim()).filter(word => word !== "");
+            const centerNode = document.createElement("div");
+            centerNode.classList.add("node", "center");
+            centerNode.textContent = nodes[0];
+            centerNode.setAttribute("draggable", true);
+            centerNode.addEventListener("dragstart", dragStart);
+            mindmapContainer.appendChild(centerNode);
+            nodes.slice(1).forEach(nodeText => {
+                const node = document.createElement("div");
+                node.classList.add("node");
+                node.textContent = nodeText;
+                node.setAttribute("draggable", true);
+                node.addEventListener("dragstart", dragStart);
+                mindmapContainer.appendChild(node);
+            });
+            saveMindMap();
+        }
+
+        function enableDragAndDrop() {
+            document.addEventListener("dragover", function(event) {
+                event.preventDefault();
+            });
+            document.addEventListener("drop", function(event) {
+                event.preventDefault();
+                const draggedNode = document.querySelector(".dragging");
+                draggedNode.style.position = "absolute";
+                draggedNode.style.left = `${event.clientX}px`;
+                draggedNode.style.top = `${event.clientY}px`;
+                saveMindMap();
+            });
+        }
+
+        function dragStart(event) {
+            event.target.classList.add("dragging");
+            setTimeout(() => event.target.classList.remove("dragging"), 0);
+        }
+
+        function saveMindMap() {
+            localStorage.setItem("mindmap", document.getElementById("mindmapContainer").innerHTML);
+        }
+
+        function loadMindMap() {
+            const savedMindMap = localStorage.getItem("mindmap");
+            if (savedMindMap) {
+                document.getElementById("mindmapContainer").innerHTML = savedMindMap;
+            }
+        }
+
+        function subscribe() {
+            alert("Premium-Abo kommt bald! Bleiben Sie dran für exklusive Funktionen!");
+        }
+
+        function donate() {
+            window.location.href = "https://www.paypal.com/donate";
+        }
+    </script>
+</body>
+</html>
